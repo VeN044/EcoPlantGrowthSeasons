@@ -20,9 +20,39 @@ namespace PlantGrowthSeasons
     public class PlantGrowthSeasonsConfig : Singleton<PlantGrowthSeasonsConfig>
     {
         [LocCategory("Global")]
-        [LocDescription("Enable RecipeThrottle wrap all Quantity values in every recipe in game to add aditional coefficient to it")]
+        [LocDescription("Enable mod activity")]
         public bool Enable { get; set; } = false;
 
+        [LocCategory("Global")]
+        [LocDisplayName("GrowRatte change")]
+        [LocDescription("Enable changing grow rate")]
+        public bool GrowthRateChangeEnable { get; set; } = true;
+
+
+        [LocCategory("Seasons")]
+        [LocDisplayName("Spring days")]
+        [LocDescription("The number of days in the spring season.")]
+        public float SpringDays { get; set; } = 5f;
+
+        [LocCategory("Seasons")]
+        [LocDisplayName("Summer days")]
+        [LocDescription("The number of days in the summer season.")]
+        public float SummerDays { get; set; } = 10f;
+
+        [LocCategory("Seasons")]
+        [LocDisplayName("Autumn  days")]
+        [LocDescription("The number of days in the autumn season.")]
+        public float AutumnDays { get; set; } = 5f;
+
+        [LocCategory("Seasons")]
+        [LocDisplayName("Winter  days")]
+        [LocDescription("The number of days in the winter season.")]
+        public float WinterDays { get; set; } = 5f;
+
+        [LocCategory("Seasons")]
+        [LocDisplayName("Seasons shift")]
+        [LocDescription("The number of days to shift seasons. If you like to start not form Spring")]
+        public float ShiftDays { get; set; } = 5f;
     }
 
 
@@ -42,7 +72,7 @@ namespace PlantGrowthSeasons
         string status = string.Empty;
         public string GetStatus() => this.status;
         public string GetCategory() => "Mods";
-        public override string ToString() => "RecipeThrottle";
+        public override string ToString() => "PlantGrowthSeasons";
 
         public void Initialize(TimedTask timer)
         {
