@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Eco.Core.Utils;
 using Eco.Gameplay.GameActions;
 using Eco.Simulation.WorldLayers.Pushers;
+using Eco.Simulation.Time;
 
 namespace PlantGrowthSeasons
 {
@@ -27,7 +28,6 @@ namespace PlantGrowthSeasons
         [LocDisplayName("GrowRatte change")]
         [LocDescription("Enable changing grow rate")]
         public bool GrowthRateChangeEnable { get; set; } = true;
-
 
         [LocCategory("Seasons")]
         [LocDisplayName("Spring days")]
@@ -74,10 +74,15 @@ namespace PlantGrowthSeasons
         public string GetCategory() => "Mods";
         public override string ToString() => "PlantGrowthSeasons";
 
+        public TimerTask timer = new TimerTask(TimeSpan.FromSeconds(10));
+        public PlantGrowthSeasons plantGroupSeasons = new PlantGrowthSeasons();
         public void Initialize(TimedTask timer)
         {
             this.status = "Ready.";
             this.config = new PluginConfig<PlantGrowthSeasonsConfig>("PlantGrowthSeasonsConfig");  // Load our plugin configuration
+            this.plantGroupSeasons.config = this.config;
+
+            OnParamEnableChanged();
 
             //UserManager.OnUserLoggedIn.Add(this.OnUserLogin);                   // Register our OnUserLoggedIn event handler for showing players our welcome message.
         }
@@ -91,6 +96,9 @@ namespace PlantGrowthSeasons
         public string GetDisplayText()
         {
             StringBuilder stringBuilder = new StringBuilder(1024);
+
+            stringBuilder.AppendLine($"Current season id {this.plantGroupSeasons.GetSeason(WorldTime.Seconds)}");
+            stringBuilder.AppendLine($"PlantGrower.GrowthRateModifier =  {PlantGrower.GrowthRateModifier}");
             //foreach (var line in this.recipeThrottle.recipeFamilyGroup)
             //    stringBuilder.AppendLine($"{line.Value} | {line.Key.DisplayName.ToString()}");
             stringBuilder.AppendLine();
@@ -109,16 +117,16 @@ namespace PlantGrowthSeasons
             if (this.config.Config.Enable)
             {
                 this.status = "Enabled";
+                this.timer.Start(() => {
+                    this.plantGroupSeasons.TickParametrs();
+                }, "PlantGrowthSeasonsTimer");
+
             }
             else
             {
                 this.status = "Disabled";
+                this.timer.StopAsync();
             }
-        }
-
-        public void ApplayParametrs()
-        {
-           //PlantGrower.GrowthRateModifier = Calculation of .GrowthRateModifier;
         }
 
     }
