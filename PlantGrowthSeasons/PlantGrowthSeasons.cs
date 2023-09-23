@@ -8,6 +8,11 @@ using Eco.Core.Plugins;
 using Eco.Simulation.Time;
 using Eco.Shared.Utils;
 using Eco.Core.Utils.Logging;
+using Eco.Simulation.WorldLayers;
+using Eco.Simulation.WorldLayers.Layers;
+using Eco.Simulation.WorldLayers.Components;
+using Eco.World.Blocks;
+using Eco.Gameplay.Players;
 
 namespace PlantGrowthSeasons
 {
@@ -29,7 +34,7 @@ namespace PlantGrowthSeasons
 
         public void TickParametrs()
         {
-            SeasonOfYear season = GetSeason(WorldTime.Seconds);
+            SeasonOfYear season = this.GetSeason(WorldTime.Seconds);
 
             switch (season) 
             {
@@ -46,7 +51,29 @@ namespace PlantGrowthSeasons
                     PlantGrower.GrowthRateModifier = 0.01f;
                     break;
             }
-            ConsoleLogWriter.Instance.Write("Update season to " + season + "\n");
+
+            foreach (WorldLayerSettings layerSettings in Singleton<WorldLayerManager>.Obj.Settings)
+            {
+                if (layerSettings.Name == "GrasslandBiome") 
+                {
+                    layerSettings.Components.Clear();
+                    switch (GetSeason(WorldTime.Seconds))
+                    {
+                        case SeasonOfYear.Spring:
+                            layerSettings.Components.Add(new BiomeComponent() { TopBlock = typeof(DirtBlock) });
+                            break;
+                        case SeasonOfYear.Summer:
+                            layerSettings.Components.Add(new BiomeComponent() { TopBlock = typeof(GrassBlock) });
+                            break;
+                        case SeasonOfYear.Autumn:
+                            layerSettings.Components.Add(new BiomeComponent() { TopBlock = typeof(ColdForestSoilBlock) });
+                            break;
+                        case SeasonOfYear.Winter:
+                            layerSettings.Components.Add(new BiomeComponent() { TopBlock = typeof(SnowBlock) });
+                            break;
+                    }
+                }
+            }
         }
 
         public SeasonOfYear GetSeason ( double Time)
@@ -54,15 +81,12 @@ namespace PlantGrowthSeasons
             double curentDay = TimeUtil.SecondsToDays(Time);
             double yearLength = this.config.Config.SpringDays + this.config.Config.SummerDays +this.config.Config.AutumnDays + this.config.Config.WinterDays;
             double dayOfYear = curentDay % yearLength;
-            //ConsoleLogWriter.Instance.Write("curentDay % yearLength = " + curentDay % yearLength + "\n");
 
             double shift = this.config.Config.ShiftDays % yearLength;
 
             double shiftedDayOfYear = 0;
             if (shift >= 0) shiftedDayOfYear = dayOfYear + shift > yearLength ? dayOfYear + shift - yearLength : dayOfYear + shift;
             else shiftedDayOfYear = dayOfYear + shift < 0 ? dayOfYear + shift + yearLength : dayOfYear + shift;
-
-            ConsoleLogWriter.Instance.Write("shiftedDayOfYear = " + shiftedDayOfYear + "\n");
 
             if (shiftedDayOfYear < this.config.Config.SpringDays) return SeasonOfYear.Spring;
             else if (shiftedDayOfYear < (this.config.Config.SummerDays + this.config.Config.SpringDays)) return SeasonOfYear.Summer;

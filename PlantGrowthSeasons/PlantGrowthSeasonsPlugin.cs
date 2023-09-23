@@ -56,7 +56,7 @@ namespace PlantGrowthSeasons
     }
 
 
-    public class PluantGrowthSeasonsPlugin :
+    public class PlantGrowthSeasonsPlugin :
      IModKitPlugin,
      IDisplayablePlugin,
      IInitializablePlugin,
@@ -96,6 +96,23 @@ namespace PlantGrowthSeasons
         public string GetDisplayText()
         {
             StringBuilder stringBuilder = new StringBuilder(1024);
+
+            // Перенести вызовы в публичные функции этот код удалить ---------
+            double curentDay = TimeUtil.SecondsToDays(WorldTime.Seconds);
+            double yearLength = this.config.Config.SpringDays + this.config.Config.SummerDays + this.config.Config.AutumnDays + this.config.Config.WinterDays;
+            double dayOfYear = curentDay % yearLength;
+            //ConsoleLogWriter.Instance.Write("curentDay % yearLength = " + curentDay % yearLength + "\n");
+
+            double shift = this.config.Config.ShiftDays % yearLength;
+
+            double shiftedDayOfYear = 0;
+            if (shift >= 0) shiftedDayOfYear = dayOfYear + shift > yearLength ? dayOfYear + shift - yearLength : dayOfYear + shift;
+            else shiftedDayOfYear = dayOfYear + shift < 0 ? dayOfYear + shift + yearLength : dayOfYear + shift;
+            stringBuilder.AppendLine($"dayOfYear is {dayOfYear}");
+            stringBuilder.AppendLine($"yearLength is {yearLength}");
+            stringBuilder.AppendLine($"shiftedDayOfYear is {shiftedDayOfYear}");
+            // -----------------------------------------------------------------
+
 
             stringBuilder.AppendLine($"Current season id {this.plantGroupSeasons.GetSeason(WorldTime.Seconds)}");
             stringBuilder.AppendLine($"PlantGrower.GrowthRateModifier =  {PlantGrower.GrowthRateModifier}");
